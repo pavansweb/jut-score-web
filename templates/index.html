@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jut-Score Storage</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        .upload-form { border: 2px dashed #ccc; padding: 30px; text-align: center; border-radius: 8px; }
+        input[type="file"] { margin: 20px 0; }
+        button { background: #2ea44f; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .messages { list-style: none; padding: 0; }
+        .message { padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .message.success { background: #d4edda; color: #155724; }
+        .message.error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Jut-Score Storage</h1>
+    <p>Upload files directly to the <strong>pavansweb/jut-score</strong> repository.</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="message {% if 'Successfully' in message %}success{% else %}error{% endif %}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <div class="upload-form">
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required><br>
+            <button type="submit">Upload to GitHub</button>
+        </form>
+    </div>
+</body>
+</html>
