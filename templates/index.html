@@ -4,36 +4,402 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jut-Score Storage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        .upload-form { border: 2px dashed #ccc; padding: 30px; text-align: center; border-radius: 8px; }
-        input[type="file"] { margin: 20px 0; }
-        button { background: #2ea44f; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-        .messages { list-style: none; padding: 0; }
-        .message { padding: 10px; margin-bottom: 10px; border-radius: 4px; }
-        .message.success { background: #d4edda; color: #155724; }
-        .message.error { background: #f8d7da; color: #721c24; }
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --muted: #64748b;
+            --brand: #3b82f6;
+            --brand-soft: #eff6ff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Manrope", sans-serif;
+            color: var(--text);
+            background-color: var(--bg);
+        }
+
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--brand);
+            color: white;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-size: 1.25rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            font-size: 0.95rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: var(--brand);
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .icon-folder { background: #fef3c7; color: #d97706; }
+        .icon-pdf { background: #fee2e2; color: #dc2626; }
+        .icon-file { background: #f1f5f9; color: #475569; }
+
+        .card-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .card-title {
+            font-weight: 700;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.95rem;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .actions-dropdown {
+            position: absolute;
+            right: 0.75rem;
+            top: 0.75rem;
+        }
+
+        .btn {
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.6rem 1rem;
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            border: none;
+        }
+
+        .breadcrumb {
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: var(--muted);
+        }
+
+        .breadcrumb a {
+            color: var(--brand);
+            text-decoration: none;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--brand);
+        }
+
+        .delete-form {
+            display: inline;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            padding: 4px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            color: #dc2626;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 1rem; }
+            .toolbar { flex-direction: column; }
+            .search-box { min-width: 0; }
+            .grid { grid-template-columns: 1fr; }
+            .header { padding: 0.75rem 1rem; }
+        }
     </style>
 </head>
 <body>
-    <h1>Jut-Score Storage</h1>
-    <p>Upload files directly to the <strong>pavansweb/jut-score</strong> repository.</p>
+    <header class="header">
+        <a href="{{ url_for('index', folder_path='storage') }}" class="brand">
+            <div class="brand-icon"><i class="bi bi-folder-fill"></i></div>
+            <span class="fw-bold">Pavan's Files</span>
+        </a>
+        <div class="nav-actions">
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addFolderModal">
+                <i class="bi bi-folder-plus"></i>
+            </button>
+            <form method="post" action="{{ url_for('logout') }}" class="d-inline">
+                <button class="btn btn-light btn-sm" type="submit">Logout</button>
+            </form>
+        </div>
+    </header>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul class="messages">
-          {% for message in messages %}
-            <li class="message {% if 'Successfully' in message %}success{% else %}error{% endif %}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category in ['success', 'danger', 'warning', 'info'] else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-    <div class="upload-form">
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required><br>
-            <button type="submit">Upload to GitHub</button>
-        </form>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index', folder_path='storage') }}">Home</a></li>
+                {% if current_path != 'storage' %}
+                    {% set parts = current_path.replace('storage/', '').split('/') %}
+                    {% set cumulative_path = namespace(value='storage') %}
+                    {% for part in parts %}
+                        {% set cumulative_path.value = cumulative_path.value + '/' + part %}
+                        {% if loop.last %}
+                            <li class="breadcrumb-item active">{{ part }}</li>
+                        {% else %}
+                            <li class="breadcrumb-item"><a href="{{ url_for('index', folder_path=cumulative_path.value) }}">{{ part }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </ol>
+        </nav>
+
+        <div class="upload-zone" onclick="document.getElementById('uploadModalTrigger').click()">
+            <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+            <p class="mt-2 mb-0">Click to upload files to this folder</p>
+            <button class="d-none" id="uploadModalTrigger" data-bs-toggle="modal" data-bs-target="#uploadModal"></button>
+        </div>
+
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input id="searchInput" type="search" class="search-input" placeholder="Search in this folder...">
+            </div>
+        </div>
+
+        <div class="grid" id="entriesList">
+            {% if parent_path %}
+                <a href="{{ url_for('index', folder_path=parent_path) }}" class="card">
+                    <div class="icon-box icon-folder"><i class="bi bi-arrow-up-short"></i></div>
+                    <div class="card-info">
+                        <h3 class="card-title">Go Back</h3>
+                        <div class="card-meta">Parent directory</div>
+                    </div>
+                </a>
+            {% endif %}
+
+            {% for folder in folders %}
+                <a href="{{ url_for('index', folder_path=folder.path) }}" class="card" data-name="{{ folder.name|lower }}">
+                    <div class="icon-box icon-folder"><i class="bi bi-folder-fill"></i></div>
+                    <div class="card-info">
+                        <h3 class="card-title">{{ folder.name }}</h3>
+                        <div class="card-meta">Folder</div>
+                    </div>
+                </a>
+            {% endfor %}
+
+            {% for file in files %}
+                <div class="card" data-name="{{ file.name|lower }}">
+                    <a href="{{ file.download_url }}" target="_blank" class="d-flex align-items-center text-decoration-none color-inherit flex-grow-1 min-w-0">
+                        <div class="icon-box {{ 'icon-pdf' if file.is_pdf else 'icon-file' }}">
+                            <i class="bi {{ file.icon }}"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">{{ file.name }}</h3>
+                            <div class="card-meta">{{ file.size_label }}</div>
+                        </div>
+                    </a>
+                    <form action="{{ url_for('delete_file', path=file.path) }}" method="post" class="delete-form" onsubmit="return confirm('Delete this file?')">
+                        <button type="submit" class="delete-btn"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if not folders and not files and not parent_path %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-folder2-open fs-1"></i>
+                <p class="mt-2">This folder is empty</p>
+            </div>
+        {% endif %}
     </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">Upload File</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="folder_path" value="{{ current_path }}">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Target Folder</label>
+                            <input class="form-control bg-light border-0" type="text" value="{{ current_path.replace('storage', '') or '/' }}" disabled>
+                        </div>
+                        <input class="form-control" type="file" name="file" required>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="submit" class="btn btn-primary w-100 py-2">Start Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addFolderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <form action="{{ url_for('create_folder') }}" method="post">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">New Folder</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="current_path" value="{{ current_path }}">
+                        <input type="text" class="form-control" name="folder_name" placeholder="Name" required pattern="[a-zA-Z0-9_\- ]+">
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="submit" class="btn btn-primary w-100 py-2">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const searchInput = document.getElementById("searchInput");
+        const cards = Array.from(document.querySelectorAll(".grid .card"));
+
+        searchInput?.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase();
+            cards.forEach(card => {
+                const name = card.dataset.name || "";
+                card.style.display = name.includes(query) ? "flex" : "none";
+            });
+        });
+    </script>
 </body>
 </html>
